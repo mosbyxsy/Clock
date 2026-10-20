@@ -7,9 +7,32 @@
     <link rel="icon" type="image/svg+xml" href="src/images/logo.svg" />
     <link rel="stylesheet" href="src/css/style.css" />
     <link rel="stylesheet" href="src/css/layout.css" />
+    <link rel="stylesheet" href="src/css/loading.css" />
+    <script src="src/js/loading.js"></script>
   </head>
   <body>
-    <header>
+    <div
+      id="startupLoading"
+      class="startup-loading"
+      role="status"
+      aria-live="polite"
+      aria-busy="true"
+    >
+      <img src="src/images/logo.svg" alt="" width="56" height="56" />
+      <h1>世界时钟</h1>
+      <span class="loading-spinner" aria-hidden="true"></span>
+      <p id="startupMessage">正在加载城市与时区数据…</p>
+      <button id="startupRetry" type="button" hidden>重新加载</button>
+    </div>
+    <noscript>
+      <p>本网站需要启用 JavaScript 才能显示城市时间和运行时间工具。</p>
+      <style>
+        .startup-loading {
+          display: none;
+        }
+      </style>
+    </noscript>
+    <header inert>
       <a class="brand" href="#home">
         <img class="brand-logo" src="src/images/logo.svg" width="36" height="36" alt="" />
         世界时钟
@@ -34,13 +57,17 @@
       <span class="badge">● 离线可用</span>
     </header>
     <!-- 页面骨架：业务脚本依赖各区块的 id；普通脚本按数据、算法、组件、业务入口顺序加载，以兼容 file://。 -->
-    <main>
+    <main inert>
       <section id="home">
         <div class="hero">
           <div class="globe-panel panel">
             <div class="panel-title">
               <h2>世界地球</h2>
               <span class="live">● 实时</span>
+            </div>
+            <div id="globeLoading" class="globe-loading" role="status">
+              <span class="loading-spinner" aria-hidden="true"></span>
+              <span>正在准备地球…</span>
             </div>
             <canvas id="globe" aria-label="可拖动和缩放的世界地球"></canvas>
             <div id="globeFallback" hidden>
@@ -82,7 +109,10 @@
               <button id="showAll">仅看收藏</button>
             </div>
             <p id="searchCount" class="muted small"></p>
-            <div id="cityCards" class="city-grid"></div>
+            <div id="cityCards" class="city-grid" aria-busy="true">
+              <div class="city-skeleton" aria-hidden="true"></div>
+              <div class="city-skeleton" aria-hidden="true"></div>
+            </div>
           </div>
         </div>
       </section>
@@ -345,24 +375,24 @@
         <span>地图：Natural Earth（公共领域） · 完整离线，无需服务器</span>
       </footer>
     </main>
-    <script src="src/data/cities.js"></script>
-    <script src="src/data/countries.js"></script>
-    <script src="src/data/land.js"></script>
-    <script src="src/js/time.js"></script>
-    <script src="src/vendor/d3-array.min.js"></script>
-    <script src="src/vendor/d3-geo.min.js"></script>
-    <script src="src/js/app-core.js"></script>
-    <script src="src/js/globe-shaders.js"></script>
-    <script src="src/js/globe.js"></script>
-    <script src="src/js/city-picker.js"></script>
-    <script src="src/js/cities-panel.js"></script>
-    <script src="src/js/zone-overview.js"></script>
-    <script src="src/js/time-converter.js"></script>
-    <script src="src/js/time-reverse.js"></script>
-    <script src="src/js/app.js"></script>
-    <script src="src/js/region-details.js"></script>
-    <script src="src/js/time-shift.js"></script>
-    <script src="src/js/number-stepper.js"></script>
-    <script src="src/js/navigation.js"></script>
+    <script defer src="src/data/cities.js"></script>
+    <script defer src="src/data/countries.js"></script>
+    <script defer src="src/data/land.js"></script>
+    <script defer src="src/js/time.js"></script>
+    <script defer src="src/vendor/d3-array.min.js"></script>
+    <script defer src="src/vendor/d3-geo.min.js"></script>
+    <script defer src="src/js/app-core.js"></script>
+    <script defer src="src/js/globe-shaders.js"></script>
+    <script defer src="src/js/globe.js"></script>
+    <script defer src="src/js/city-picker.js"></script>
+    <script defer src="src/js/cities-panel.js"></script>
+    <script defer src="src/js/zone-overview.js"></script>
+    <script defer src="src/js/time-converter.js"></script>
+    <script defer src="src/js/time-reverse.js"></script>
+    <script defer src="src/js/region-details.js"></script>
+    <script defer src="src/js/time-shift.js"></script>
+    <script defer src="src/js/number-stepper.js"></script>
+    <script defer src="src/js/navigation.js"></script>
+    <script defer src="src/js/app.js"></script>
   </body>
 </html>

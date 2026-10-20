@@ -14,6 +14,8 @@
 
 无需安装依赖或启动服务器。网站支持 `file://` 和断网使用；部署到静态网站服务器时，同样保持入口与资源的相对路径不变。
 
+基础数据准备期间显示加载状态；时间工具就绪后即可操作，地球独立继续加载。城市卡片分批显示，时钟仅刷新可见区域附近的卡片；缺失资源会显示重试提示。
+
 ## 功能
 
 | 工具     | 可以做什么                                                          |
@@ -51,7 +53,8 @@ CLOCK/
 │  ├─ images/logo.svg          页头标志与浏览器标签页图标
 │  ├─ css/
 │  │  ├─ style.css             组件样式及交互状态
-│  │  └─ layout.css            整页间距、尺寸与响应式布局规范
+│  │  ├─ layout.css            整页间距、尺寸与响应式布局规范
+│  │  └─ loading.css           全局与局部加载状态
 │  ├─ js/
 │  │  ├─ app-core.js           共享工具、偏好存储与数据查询
 │  │  ├─ app.js                面板初始化与统一刷新调度
@@ -59,6 +62,7 @@ CLOCK/
 │  │  ├─ city-picker.js        可搜索选择框、键盘操作与弹层定位
 │  │  ├─ globe.js              地球渲染、标签、拾取与手势交互
 │  │  ├─ globe-shaders.js      WebGL 着色器
+│  │  ├─ loading.js            基础加载状态、异常提示与任务让步
 │  │  ├─ navigation.js         导航高亮与移动端菜单
 │  │  ├─ number-stepper.js     数字输入框统一增减操作
 │  │  ├─ region-details.js     地区时间详情与说明展示
@@ -77,7 +81,8 @@ CLOCK/
 │  └─ data/                    Natural Earth 原始 GeoJSON
 ├─ tests/
 │  ├─ time.test.cjs            时间规则与夏令时边界回归
-│  └─ browser.test.cjs         离线交互、布局与渲染回退检查
+│  ├─ browser.test.cjs         离线交互、布局与渲染回退检查
+│  └─ loading.test.cjs         数据延迟、分批加载及资源失败检查
 ├─ .gitattributes              Git 文本换行规则
 ├─ .gitignore                  Git 忽略规则
 ├─ .prettierrc.json            代码格式配置
@@ -95,6 +100,7 @@ CLOCK/
 | ---------------- | ---------------------------------- | --------------------------------- |
 | 时间算法回归     | `node tests/time.test.cjs`         | Node.js                           |
 | 离线界面验收     | `node tests/browser.test.cjs`      | Node.js、Playwright、Edge         |
+| 加载流程验收     | `node tests/loading.test.cjs`      | Node.js、Playwright、Edge         |
 | 重新生成国家数据 | `node scripts/build-countries.cjs` | Node.js、`scripts/data/` 原始资料 |
 
 Playwright 不在默认模块路径时，可用 `PLAYWRIGHT_MODULE` 环境变量指定。测试不生成截图或交付包。

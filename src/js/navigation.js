@@ -2,7 +2,7 @@
  * 桌面导航与移动端折叠菜单共用同一组锚点。
  * 移动端显示当前栏目，选择后收起；支持外部点击和 Escape，桌面恢复普通导航。
  */
-(() => {
+window.ClockFeatures.createNavigation = function () {
   const header = document.querySelector('header'),
     nav = header.querySelector('nav');
   const mobile = matchMedia('(max-width:760px)');
@@ -80,4 +80,4 @@
     update();
   });
   update();
-})();
+};

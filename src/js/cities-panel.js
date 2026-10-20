@@ -19,8 +19,26 @@ window.ClockFeatures.createCitiesPanel = function () {
   let selectedCityId = 0;
   let showAllCities = true;
   let clockBindings = [];
+  let renderGeneration = 0;
+  let bindingsByCard = new WeakMap();
   const list = getById('cityCards');
   const search = getById('search');
+  const visibilityObserver =
+    typeof IntersectionObserver === 'function'
+      ? new IntersectionObserver(
+          (entries) => {
+            let newlyVisible = false;
+            for (const entry of entries) {
+              const binding = bindingsByCard.get(entry.target);
+              if (!binding) continue;
+              binding.visible = entry.isIntersecting;
+              newlyVisible ||= entry.isIntersecting;
+            }
+            if (newlyVisible) tick();
+          },
+          { root: list, rootMargin: '80px 0px' }
+        )
+      : null;
 
   function getVisibleCities() {
     const query = search.value.trim().toLowerCase();
@@ -71,7 +89,9 @@ window.ClockFeatures.createCitiesPanel = function () {
     time.dataset.clock = city.id;
     meta.dataset.meta = city.id;
     meta.append(date, offset);
-    clockBindings.push({ city, time, date, offset });
+    const binding = { city, time, date, offset, visible: true };
+    clockBindings.push(binding);
+    bindingsByCard.set(card, binding);
     const details = createElement('button', 'region-detail-link', '时间详情 ↗');
     details.type = 'button';
     details.onclick = (event) => {
@@ -98,7 +118,8 @@ window.ClockFeatures.createCitiesPanel = function () {
     return card;
   }
 
-  function render() {
+  async function render() {
+    const generation = ++renderGeneration;
     const cities = getVisibleCities();
     const searching = Boolean(search.value.trim());
     getById('clearSearch').hidden = search.value.length === 0;
@@ -114,17 +135,30 @@ window.ClockFeatures.createCitiesPanel = function () {
         : favorites.length
           ? `${favorites.length} 座收藏城市 · 点击城市定位地球`
           : '点击“查看全部”，为城市添加星标';
+    visibilityObserver?.disconnect();
     clockBindings = [];
-    const cards = cities.map(createCityCard);
-    list.replaceChildren(...cards);
+    bindingsByCard = new WeakMap();
+    list.replaceChildren();
+    list.setAttribute('aria-busy', 'true');
+    // 每批先显示少量卡片再让出主线程。新搜索/收藏切换会取消旧批次，避免旧结果回流。
+    for (let index = 0; index < cities.length; index += 16) {
+      if (generation !== renderGeneration) return;
+      const cards = cities.slice(index, index + 16).map(createCityCard);
+      list.append(...cards);
+      cards.forEach((card) => visibilityObserver?.observe(card));
+      tick();
+      if (index + 16 < cities.length) await ClockLoading.yieldToBrowser();
+    }
+    if (generation !== renderGeneration) return;
     if (!cities.length)
       list.append(createElement('p', 'empty', '没有匹配城市，请尝试国家名、中文或英文城市名。'));
-    tick();
+    list.setAttribute('aria-busy', 'false');
   }
 
   /** 每次刷新只计算一次城市视图；日期未变化时不重建节点，保留焦点和滚动位置。 */
   function tick(instant = new Date()) {
-    for (const { city, time, date, offset } of clockBindings) {
+    for (const { city, time, date, offset, visible } of clockBindings) {
+      if (!visible) continue;
       if (!supportedCityIds.has(city.id)) {
         time.textContent = '不支持此时区';
         date.textContent = '请升级浏览器的时区数据';

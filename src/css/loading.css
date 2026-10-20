@@ -1,0 +1,74 @@
+/* 基础数据就绪前使用全局状态；地球后续加载独立显示，不阻断其他工具。 */
+.startup-loading {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 16px;
+  padding: 24px;
+  background: #080f1df5;
+  text-align: center;
+}
+.startup-loading[hidden],
+.globe-loading[hidden] {
+  display: none;
+}
+.startup-loading img {
+  width: 56px;
+  height: 56px;
+}
+.startup-loading h1 {
+  margin: 0;
+  font-size: 22px;
+}
+.startup-loading p {
+  margin: 0;
+  max-width: 36ch;
+  color: var(--muted);
+  font-size: 14px;
+}
+.loading-spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid #2b4658;
+  border-top-color: var(--cyan);
+  border-radius: 50%;
+  animation: loading-spin 1s linear infinite;
+}
+.loading-failed .loading-spinner {
+  display: none;
+}
+.globe-loading {
+  position: absolute;
+  inset: 64px 16px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--muted);
+  text-align: center;
+  font-size: 13px;
+  pointer-events: none;
+}
+.city-skeleton {
+  height: 230px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background:
+    linear-gradient(#132739 14px, transparent 14px) 16px 20px / 55% 28px no-repeat,
+    #102030;
+}
+@keyframes loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .loading-spinner {
+    animation: none;
+  }
+}

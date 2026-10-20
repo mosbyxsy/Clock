@@ -3,7 +3,7 @@
  * 地形纹理与拾取索引只构建一次；逐帧只更新视角、GPU 采样及稳定 DOM 标签。
  * 坐标单位：经纬度为角度，投影和三角函数内部使用弧度，指针与标签位置使用 CSS 像素。
  */
-(function () {
+window.ClockFeatures.createGlobe = async function () {
   'use strict';
   let canvas = document.getElementById('globe');
   const panel = canvas.parentElement;
@@ -47,7 +47,7 @@
   const territories = { type: 'GeometryCollection', geometries: countries.map((c) => c.geometry) };
   const regionName = (city) => city.region || city.country;
   /** 把国家整数 key 编码进离屏纹理颜色，读取像素即可快速拾取领土。边界处再进行精确球面包含判断。 */
-  function makeCountryIndex() {
+  async function makeCountryIndex() {
     const image = document.createElement('canvas');
     image.width = 2048;
     image.height = 1024;
@@ -59,19 +59,24 @@
       .scale(2048 / (2 * Math.PI))
       .precision(0.2);
     const path = d3.geoPath(projection, ctx);
+    let batchStarted = performance.now();
     for (const country of countries) {
       ctx.beginPath();
       path(country.geometry);
       ctx.fillStyle = `rgb(${country.key & 255},${country.key >> 8},0)`;
       ctx.fill();
       country.bounds = d3.geoBounds(country.geometry);
+      if (performance.now() - batchStarted > 8) {
+        await ClockLoading.yieldToBrowser();
+        batchStarted = performance.now();
+      }
     }
     return { image, pixels: ctx.getImageData(0, 0, 2048, 1024).data };
   }
-  const countryIndex = makeCountryIndex();
+  const countryIndex = await makeCountryIndex();
 
   /** 预先绘制等距圆柱地图纹理；颜色通道编码陆地、边界和经纬网，交给着色器合成显示。 */
-  function makeTexture() {
+  async function makeTexture() {
     const image = document.createElement('canvas');
     image.width = 2048;
     image.height = 1024;
@@ -93,6 +98,7 @@
     ctx.lineWidth = 0.65;
     ctx.stroke();
     ctx.beginPath();
+    await ClockLoading.yieldToBrowser();
     path(territories);
     ctx.strokeStyle = '#ff8800';
     ctx.lineWidth = 1.25;
@@ -107,7 +113,7 @@
   }
 
   /** 创建 WebGL 渲染器。使用逆正射投影将屏幕球面像素还原为经纬度，再采样本地纹理，避免正面裁剪造成跨球多边形。 */
-  function gpuRenderer() {
+  async function gpuRenderer() {
     const gl = canvas.getContext('webgl', {
       alpha: true,
       antialias: false,
@@ -118,7 +124,7 @@
     if (!gl) return null;
     let program, texture, locations;
     let lost = false;
-    const image = makeTexture();
+    const image = await makeTexture();
     if (!image) return null;
     /** 编译单个着色器并检查状态；编译失败由外层触发兼容渲染路径。 */
     function shader(type, source) {
@@ -312,7 +318,7 @@
   // ── 渲染器选择与兼容回退 ──────────────────────────────
   let renderer;
   try {
-    renderer = gpuRenderer();
+    renderer = await gpuRenderer();
   } catch (error) {
     console.warn('地球加速渲染不可用，将使用兼容模式。', error.message);
   }
@@ -1023,4 +1029,4 @@
   resize();
   updateButton();
   wake();
-})();
+};

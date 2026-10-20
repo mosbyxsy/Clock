@@ -1,5 +1,5 @@
 /** 数字输入统一增减操作，沿用原生 min/max/step 规则及键盘能力。 */
-(() => {
+window.ClockFeatures.createNumberSteppers = function () {
   'use strict';
   for (const wrapper of document.querySelectorAll('.number-stepper')) {
     const input = wrapper.querySelector('input[type="number"]');
@@ -21,4 +21,4 @@
       });
     }
   }
-})();
+};

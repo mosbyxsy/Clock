@@ -3,7 +3,7 @@
  * 天/时/分/秒均允许任意非负安全整数，不强制小时小于24或分秒小于60。
  * 1天固定为24小时；跨夏令时后显示的当地钟点可能改变，不按“日历日”加减。
  */
-(() => {
+window.ClockFeatures.createTimeShift = function () {
   'use strict';
   const { getById, parseZoneValue } = ClockUI;
   const durationFields = [
@@ -125,4 +125,4 @@
   };
   createCityPicker(getById('shiftZone'), '搜索城市或 UTC 偏移…');
   useCurrentTime();
-})();
+};

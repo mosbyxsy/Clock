@@ -15,6 +15,14 @@ const path = require('node:path');
       if (/^https?:/.test(request.url())) externalRequests.push(request.url());
     });
     await page.goto(pathToFileURL(path.resolve(__dirname, '../index.html')).href);
+    await page.waitForFunction(
+      () =>
+        document.documentElement.dataset.appState === 'ready' &&
+        document.documentElement.dataset.globeState === 'ready'
+    );
+    await page.waitForFunction(
+      () => document.getElementById('cityCards').getAttribute('aria-busy') === 'false'
+    );
     assert.equal(await page.locator('.city-card').count(), 305);
     assert.equal(await page.locator('.zone-card').count(), 39);
     // 六种常见宽度下，卡片内容不能越过自身边界，也不能撑出页面横向滚动。
@@ -43,6 +51,9 @@ const path = require('node:path');
     await page.locator('#rotate').click();
     assert.equal(await page.evaluate(() => Globe.diagnostics().autoRotate), true);
     await page.locator('#clearSearch').click();
+    await page.waitForFunction(
+      () => document.getElementById('cityCards').getAttribute('aria-busy') === 'false'
+    );
     assert.equal(await page.locator('.city-card').count(), 305);
     await page.evaluate(() => showRegionDetails(12));
     assert.equal(await page.locator('.region-facts dd').first().textContent(), '乌兰巴托');
@@ -91,6 +102,7 @@ const path = require('node:path');
       };
     });
     await fallback.goto(pathToFileURL(path.resolve(__dirname, '../index.html')).href);
+    await fallback.waitForFunction(() => document.documentElement.dataset.globeState === 'ready');
     assert.match(await fallback.evaluate(() => Globe.diagnostics().renderer), /2d/i);
     await fallback.close();
     const staticPage = await browser.newPage({ offline: true });
@@ -98,6 +110,12 @@ const path = require('node:path');
       HTMLCanvasElement.prototype.getContext = () => null;
     });
     await staticPage.goto(pathToFileURL(path.resolve(__dirname, '../index.html')).href);
+    await staticPage.waitForFunction(
+      () =>
+        document.documentElement.dataset.appState === 'ready' &&
+        document.documentElement.dataset.globeState === 'ready' &&
+        document.getElementById('cityCards').getAttribute('aria-busy') === 'false'
+    );
     assert.equal(await staticPage.locator('#globeFallback svg').count(), 1);
     assert.equal(await staticPage.locator('.city-card').count(), 305);
     await staticPage.close();

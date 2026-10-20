@@ -3,7 +3,7 @@
  * 首都关联优先使用显式首都映射与领土 id，不能依赖“蒙古/蒙古国”等中文名称完全一致。
  * 说明只覆盖内置城市；不把数据库标识数量误称为国家实际时区数量。
  */
-(() => {
+window.ClockFeatures.createRegionDetails = function () {
   'use strict';
   const select = document.getElementById('regionCity');
   const content = document.getElementById('regionContent');
@@ -192,4 +192,4 @@
     else content.querySelector('.region-clock').textContent = view.time;
   }, 1000);
   render(0);
-})();
+};
