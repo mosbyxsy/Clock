@@ -36,7 +36,10 @@ const root = path.resolve(__dirname, '..');
     await page.addInitScript(() => {
       document.addEventListener('DOMContentLoaded', () => {
         new MutationObserver(() => {
-          if (document.documentElement.dataset.appState === 'ready' && !window.readySnapshot) {
+          if (
+            ['prepared', 'ready'].includes(document.documentElement.dataset.appState) &&
+            !window.readySnapshot
+          ) {
             window.readySnapshot = {
               globePending: !window.Globe,
               cards: document.querySelectorAll('.city-card').length,

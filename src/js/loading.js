@@ -1,21 +1,55 @@
-/** 尽早注册加载状态与失败处理；不依赖城市数据或业务组件。 */
+/** 基础加载状态：延迟出现、最短展示、柔和退出；展示计时不阻塞业务初始化。 */
 (() => {
   'use strict';
+  const SHOW_DELAY_MS = 200;
+  const MIN_VISIBLE_MS = 300;
+  const FADE_MS = 150;
   let failed = false;
-  let ready = false;
+  let prepared = false;
+  let shownAt = null;
+  let dismissTimer;
+  let fadeTimer;
   const get = (id) => document.getElementById(id);
 
+  function withMarkup(callback) {
+    if (get('startupLoading')) callback();
+    else document.addEventListener('DOMContentLoaded', callback, { once: true });
+  }
+
+  function showLoading() {
+    withMarkup(() => {
+      if (prepared || failed) return;
+      get('startupLoading').hidden = false;
+      shownAt = performance.now();
+    });
+  }
+
+  function revealPage() {
+    get('startupLoading').hidden = true;
+    get('startupLoading').setAttribute('aria-busy', 'false');
+    document
+      .querySelectorAll('header[inert], main[inert]')
+      .forEach((node) => node.removeAttribute('inert'));
+    document.documentElement.dataset.appState = 'ready';
+  }
+
   function fail(message) {
-    if (ready) return;
+    if (prepared) return;
     failed = true;
-    const show = () => {
+    clearTimeout(showTimer);
+    clearTimeout(timeout);
+    clearTimeout(dismissTimer);
+    clearTimeout(fadeTimer);
+    // 失败无需等待显示阈值，也不应被已经排队的淡出动作隐藏。
+    withMarkup(() => {
+      const overlay = get('startupLoading');
+      overlay.hidden = false;
+      overlay.classList.remove('is-leaving');
+      overlay.classList.add('loading-failed');
+      overlay.setAttribute('aria-busy', 'false');
       get('startupMessage').textContent = message;
       get('startupRetry').hidden = false;
-      get('startupLoading').classList.add('loading-failed');
-      get('startupLoading').setAttribute('aria-busy', 'false');
-    };
-    if (get('startupLoading')) show();
-    else document.addEventListener('DOMContentLoaded', show, { once: true });
+    });
   }
 
   window.ClockLoading = {
@@ -24,14 +58,24 @@
       if (!failed && get('startupMessage')) get('startupMessage').textContent = text;
     },
     finish() {
-      if (failed) return;
-      ready = true;
+      if (failed || prepared) return;
+      prepared = true;
+      clearTimeout(showTimer);
       clearTimeout(timeout);
-      get('startupLoading').hidden = true;
-      document
-        .querySelectorAll('header[inert], main[inert]')
-        .forEach((node) => node.removeAttribute('inert'));
-      document.documentElement.dataset.appState = 'ready';
+      document.documentElement.dataset.appState = 'prepared';
+      if (shownAt === null) {
+        // 快速完成从未显示过遮罩，立即开放操作，不人为增加加载时间。
+        revealPage();
+        return;
+      }
+      dismissTimer = setTimeout(
+        () => {
+          get('startupLoading').classList.add('is-leaving');
+          const fadeDuration = matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : FADE_MS;
+          fadeTimer = setTimeout(revealPage, fadeDuration);
+        },
+        Math.max(0, MIN_VISIBLE_MS - (performance.now() - shownAt))
+      );
     },
     // 等浏览器绘制当前状态，再在新任务中继续工作；后台页不能等待停发的动画帧。
     yieldToBrowser() {
@@ -58,6 +102,7 @@
   document.addEventListener('DOMContentLoaded', () => {
     get('startupRetry').onclick = () => location.reload();
   });
+  const showTimer = setTimeout(showLoading, SHOW_DELAY_MS);
   const timeout = setTimeout(
     () => fail('加载时间较长，请检查文件是否完整，或重新加载页面。'),
     20000

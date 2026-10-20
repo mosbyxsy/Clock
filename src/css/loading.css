@@ -10,6 +10,11 @@
   padding: 24px;
   background: #080f1df5;
   text-align: center;
+  opacity: 1;
+  transition: opacity 150ms ease;
+}
+.startup-loading.is-leaving {
+  opacity: 0;
 }
 .startup-loading[hidden],
 .globe-loading[hidden] {
@@ -68,6 +73,9 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
+  .startup-loading {
+    transition: none;
+  }
   .loading-spinner {
     animation: none;
   }

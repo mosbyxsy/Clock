@@ -14,7 +14,7 @@
 
 无需安装依赖或启动服务器。网站支持 `file://` 和断网使用；部署到静态网站服务器时，同样保持入口与资源的相对路径不变。
 
-基础数据准备期间显示加载状态；时间工具就绪后即可操作，地球独立继续加载。城市卡片分批显示，时钟仅刷新可见区域附近的卡片；缺失资源会显示重试提示。
+基础数据准备超过 200ms 才显示全局加载提示，快速完成时不显示。提示出现后至少展示 300ms，再淡出 150ms；错误提示立即显示。地球独立继续加载，城市卡片分批显示，时钟仅刷新可见区域附近的卡片。
 
 ## 功能
 
@@ -82,7 +82,8 @@ CLOCK/
 ├─ tests/
 │  ├─ time.test.cjs            时间规则与夏令时边界回归
 │  ├─ browser.test.cjs         离线交互、布局与渲染回退检查
-│  └─ loading.test.cjs         数据延迟、分批加载及资源失败检查
+│  ├─ loading.test.cjs         数据延迟、分批加载及资源失败检查
+│  └─ loading-state.test.cjs   加载提示的延迟、展示与退出时序
 ├─ .gitattributes              Git 文本换行规则
 ├─ .gitignore                  Git 忽略规则
 ├─ .prettierrc.json            代码格式配置
@@ -96,12 +97,13 @@ CLOCK/
 
 以下命令均在项目根目录执行。
 
-| 任务             | 命令                               | 环境要求                          |
-| ---------------- | ---------------------------------- | --------------------------------- |
-| 时间算法回归     | `node tests/time.test.cjs`         | Node.js                           |
-| 离线界面验收     | `node tests/browser.test.cjs`      | Node.js、Playwright、Edge         |
-| 加载流程验收     | `node tests/loading.test.cjs`      | Node.js、Playwright、Edge         |
-| 重新生成国家数据 | `node scripts/build-countries.cjs` | Node.js、`scripts/data/` 原始资料 |
+| 任务             | 命令                                | 环境要求                          |
+| ---------------- | ----------------------------------- | --------------------------------- |
+| 时间算法回归     | `node tests/time.test.cjs`          | Node.js                           |
+| 离线界面验收     | `node tests/browser.test.cjs`       | Node.js、Playwright、Edge         |
+| 加载流程验收     | `node tests/loading.test.cjs`       | Node.js、Playwright、Edge         |
+| 加载提示时序     | `node tests/loading-state.test.cjs` | Node.js                           |
+| 重新生成国家数据 | `node scripts/build-countries.cjs`  | Node.js、`scripts/data/` 原始资料 |
 
 Playwright 不在默认模块路径时，可用 `PLAYWRIGHT_MODULE` 环境变量指定。测试不生成截图或交付包。
 
