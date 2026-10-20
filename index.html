@@ -4,12 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>世界时钟 · 此刻，连接世界</title>
+    <link rel="icon" type="image/svg+xml" href="src/images/logo.svg" />
     <link rel="stylesheet" href="src/css/style.css" />
+    <link rel="stylesheet" href="src/css/layout.css" />
   </head>
   <body>
     <header>
       <a class="brand" href="#home">
-        <span>◎</span>
+        <img class="brand-logo" src="src/images/logo.svg" width="36" height="36" alt="" />
         世界时钟
       </a>
       <nav id="mainNavigation" aria-label="主导航">
@@ -137,17 +139,16 @@
       <section id="shift" class="workspace panel">
         <p class="eyebrow">TIME CALCULATOR</p>
         <h2>时间推算</h2>
-        <p class="muted">
-          从指定时间往前或往后推算。天、小时、分、秒可任选填写，留空按 0 计算；例如 100 小时、150
-          分钟。按实际经过时长计算，1 天 = 24 小时，跨夏令时后当地钟点可能变化。
+        <p class="muted shift-description">
+          选定一个时间，加上或减去一段时长，查看新的日期与时间。
         </p>
         <form id="shiftForm">
-          <div class="form-row">
+          <div class="shift-base-grid">
             <label>
               城市 / 固定偏移
               <select id="shiftZone"></select>
             </label>
-            <label>
+            <label for="shiftBase">
               基准日期与时间
               <input
                 id="shiftBase"
@@ -160,67 +161,158 @@
             </label>
             <button id="shiftNow" type="button">使用此刻</button>
           </div>
-          <div class="shift-amount-toolbar">
-            <span>推算时长</span>
-            <button id="shiftClear" type="button">清空天、时、分、秒</button>
+          <div class="shift-duration-group" role="group" aria-labelledby="shiftDurationTitle">
+            <div class="shift-amount-toolbar">
+              <h3 id="shiftDurationTitle">
+                推算时长
+                <span>任选填写，留空按 0 计算</span>
+              </h3>
+              <button id="shiftClear" type="button" aria-label="清空天、时、分、秒">
+                清空时长
+              </button>
+            </div>
+            <div class="shift-amounts">
+              <label>
+                天
+                <div class="number-stepper">
+                  <input
+                    id="shiftDays"
+                    type="number"
+                    min="0"
+                    step="1"
+                    placeholder="0"
+                    inputmode="numeric"
+                  />
+                  <div class="number-stepper-actions">
+                    <button
+                      type="button"
+                      class="number-stepper-button number-stepper-up"
+                      data-number-step="1"
+                      aria-label="增加数值"
+                    >
+                      <span aria-hidden="true"></span>
+                    </button>
+                    <button
+                      type="button"
+                      class="number-stepper-button number-stepper-down"
+                      data-number-step="-1"
+                      aria-label="减少数值"
+                    >
+                      <span aria-hidden="true"></span>
+                    </button>
+                  </div>
+                </div>
+              </label>
+              <label>
+                时
+                <div class="number-stepper">
+                  <input
+                    id="shiftHours"
+                    type="number"
+                    min="0"
+                    step="1"
+                    placeholder="0"
+                    inputmode="numeric"
+                  />
+                  <div class="number-stepper-actions">
+                    <button
+                      type="button"
+                      class="number-stepper-button number-stepper-up"
+                      data-number-step="1"
+                      aria-label="增加数值"
+                    >
+                      <span aria-hidden="true"></span>
+                    </button>
+                    <button
+                      type="button"
+                      class="number-stepper-button number-stepper-down"
+                      data-number-step="-1"
+                      aria-label="减少数值"
+                    >
+                      <span aria-hidden="true"></span>
+                    </button>
+                  </div>
+                </div>
+              </label>
+              <label>
+                分
+                <div class="number-stepper">
+                  <input
+                    id="shiftMinutes"
+                    type="number"
+                    min="0"
+                    step="1"
+                    placeholder="0"
+                    inputmode="numeric"
+                  />
+                  <div class="number-stepper-actions">
+                    <button
+                      type="button"
+                      class="number-stepper-button number-stepper-up"
+                      data-number-step="1"
+                      aria-label="增加数值"
+                    >
+                      <span aria-hidden="true"></span>
+                    </button>
+                    <button
+                      type="button"
+                      class="number-stepper-button number-stepper-down"
+                      data-number-step="-1"
+                      aria-label="减少数值"
+                    >
+                      <span aria-hidden="true"></span>
+                    </button>
+                  </div>
+                </div>
+              </label>
+              <label>
+                秒
+                <div class="number-stepper">
+                  <input
+                    id="shiftSeconds"
+                    type="number"
+                    min="0"
+                    step="1"
+                    placeholder="0"
+                    inputmode="numeric"
+                  />
+                  <div class="number-stepper-actions">
+                    <button
+                      type="button"
+                      class="number-stepper-button number-stepper-up"
+                      data-number-step="1"
+                      aria-label="增加数值"
+                    >
+                      <span aria-hidden="true"></span>
+                    </button>
+                    <button
+                      type="button"
+                      class="number-stepper-button number-stepper-down"
+                      data-number-step="-1"
+                      aria-label="减少数值"
+                    >
+                      <span aria-hidden="true"></span>
+                    </button>
+                  </div>
+                </div>
+              </label>
+            </div>
+            <p class="shift-duration-hint">
+              各项可独立输入大数值，例如 100 时或 150 分，无需手动换算。
+            </p>
           </div>
-          <div class="shift-amounts">
-            <label>
-              天
-              <input
-                id="shiftDays"
-                type="number"
-                min="0"
-                step="1"
-                placeholder="0"
-                inputmode="numeric"
-              />
-            </label>
-            <label>
-              时
-              <input
-                id="shiftHours"
-                type="number"
-                min="0"
-                step="1"
-                placeholder="0"
-                inputmode="numeric"
-              />
-            </label>
-            <label>
-              分
-              <input
-                id="shiftMinutes"
-                type="number"
-                min="0"
-                step="1"
-                placeholder="0"
-                inputmode="numeric"
-              />
-            </label>
-            <label>
-              秒
-              <input
-                id="shiftSeconds"
-                type="number"
-                min="0"
-                step="1"
-                placeholder="0"
-                inputmode="numeric"
-              />
-            </label>
-          </div>
-          <div class="form-row">
+          <div class="shift-actions">
             <label>
               推算方向
               <select id="shiftDirection">
-                <option value="1">往后推（未来 / 加上时长）</option>
-                <option value="-1">往前推（过去 / 减去时长）</option>
+                <option value="1">往后推 · 加上时长</option>
+                <option value="-1">往前推 · 减去时长</option>
               </select>
             </label>
             <button type="submit" class="primary">计算时间 →</button>
           </div>
         </form>
+        <p class="shift-note">按实际时长推算，1 天 = 24 小时。跨夏令时后，当地钟点可能变化。</p>
         <div id="shiftAmbiguity"></div>
         <div id="shiftResult" role="status" aria-live="polite"></div>
       </section>
@@ -270,6 +362,7 @@
     <script src="src/js/app.js"></script>
     <script src="src/js/region-details.js"></script>
     <script src="src/js/time-shift.js"></script>
+    <script src="src/js/number-stepper.js"></script>
     <script src="src/js/navigation.js"></script>
   </body>
 </html>

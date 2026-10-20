@@ -48,7 +48,10 @@
 CLOCK/
 ├─ index.html                  页面结构与脚本加载入口
 ├─ src/
-│  ├─ css/style.css            页面样式、组件状态与响应式布局
+│  ├─ images/logo.svg          页头标志与浏览器标签页图标
+│  ├─ css/
+│  │  ├─ style.css             组件样式及交互状态
+│  │  └─ layout.css            整页间距、尺寸与响应式布局规范
 │  ├─ js/
 │  │  ├─ app-core.js           共享工具、偏好存储与数据查询
 │  │  ├─ app.js                面板初始化与统一刷新调度
@@ -57,6 +60,7 @@ CLOCK/
 │  │  ├─ globe.js              地球渲染、标签、拾取与手势交互
 │  │  ├─ globe-shaders.js      WebGL 着色器
 │  │  ├─ navigation.js         导航高亮与移动端菜单
+│  │  ├─ number-stepper.js     数字输入框统一增减操作
 │  │  ├─ region-details.js     地区时间详情与说明展示
 │  │  ├─ time.js               时间算法与年度偏移变化
 │  │  ├─ time-converter.js     多城市时间转换

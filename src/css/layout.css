@@ -1,0 +1,390 @@
+/* 整页布局规范。组件视觉细节在 style.css，此处集中定义跨面板的尺度和响应式规则。 */
+:root {
+  --page-width: 1440px;
+  --page-gutter: clamp(16px, 2.5vw, 32px);
+  --section-gap: 24px;
+  --panel-padding: clamp(20px, 2vw, 28px);
+  --control-height: 48px;
+  --content-gap: 16px;
+  --anchor-offset: 92px;
+}
+
+html {
+  scroll-padding-top: var(--anchor-offset);
+}
+
+body {
+  line-height: 1.6;
+}
+
+button,
+input,
+select {
+  font-family: inherit;
+}
+
+header {
+  gap: clamp(24px, 4vw, 56px);
+  padding-inline: max(
+    var(--page-gutter),
+    calc((100% - var(--page-width)) / 2 + var(--page-gutter))
+  );
+}
+
+header nav {
+  gap: clamp(16px, 2.2vw, 32px);
+  font-size: 14px;
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--section-gap);
+  max-width: var(--page-width);
+  padding: var(--section-gap) var(--page-gutter) 0;
+}
+
+#home {
+  padding-top: 0;
+  margin-bottom: 0;
+}
+
+.hero {
+  gap: 20px;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+}
+
+.workspace {
+  margin: 0;
+  padding: var(--panel-padding);
+  min-width: 0;
+}
+
+/* 全部区块只使用 html 的统一滚动偏移，避免 padding 和 margin 累积出大块留白。 */
+#regionDetails {
+  scroll-margin-top: 0;
+}
+
+h2,
+.workspace h2 {
+  font-size: 22px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  line-height: 1.5;
+  letter-spacing: 1.8px;
+}
+
+.workspace > h2 {
+  margin-bottom: 24px;
+}
+
+.workspace > h2:has(+ .muted) {
+  margin-bottom: 8px;
+}
+
+.workspace > p.muted {
+  margin: 0 0 24px;
+  max-width: 90ch;
+  font-size: 14px;
+  line-height: 1.75;
+}
+
+.workspace > .section-heading {
+  margin: 0 0 20px;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.cities-panel {
+  padding: 20px;
+}
+
+.cities-panel .section-heading {
+  margin: 20px 0 12px;
+}
+
+.cities-panel h2,
+.panel-title h2 {
+  font-size: 20px;
+}
+
+.search {
+  height: var(--control-height);
+  min-height: var(--control-height);
+}
+
+label:not(.search) {
+  gap: 8px;
+  line-height: 1.5;
+}
+
+.form-row {
+  gap: var(--content-gap);
+  margin: 0 0 20px;
+}
+
+.workspace input:not([type='checkbox']),
+.workspace select {
+  height: var(--control-height);
+  min-height: var(--control-height);
+}
+
+.form-row > .primary,
+.shift-actions > .primary {
+  height: var(--control-height);
+  min-height: var(--control-height);
+}
+
+#convertMessage {
+  margin: 0 0 24px;
+  padding: 12px 16px;
+  border-left: 2px solid #376b7d;
+  border-radius: 0 6px 6px 0;
+  background: #112b3b66;
+  color: #b2cede;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+#convertMessage.error {
+  color: #ffa6a6;
+  border-color: #bc7373;
+}
+
+#convertMessage:empty,
+#reverseSummary:empty,
+.result-grid:empty {
+  display: none;
+}
+
+#reverseSummary {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.75;
+  color: var(--muted);
+}
+
+.zone-grid {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.zone-card {
+  padding: 16px;
+}
+
+.result-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--content-gap);
+  margin-top: 20px;
+}
+
+.result-card {
+  min-width: 0;
+  padding: 20px;
+  overflow-wrap: anywhere;
+}
+
+.result-card h3 {
+  padding-right: 24px;
+  line-height: 1.6;
+}
+
+.result-card p {
+  line-height: 1.7;
+}
+
+.region-selector {
+  flex: 0 1 390px;
+}
+
+.region-summary {
+  padding: 24px;
+  gap: 24px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
+}
+
+.region-facts {
+  gap: 20px 24px;
+}
+
+.region-guide {
+  font-size: 14px;
+  line-height: 1.85;
+}
+
+.region-guide h3 {
+  margin: 24px 0 8px;
+  line-height: 1.5;
+}
+
+.region-guide p {
+  margin: 0 0 16px;
+}
+
+.region-related {
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.region-related button {
+  min-height: 36px;
+  padding: 8px 12px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.shift-base-grid {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) var(--action-button-width, 180px);
+  gap: var(--content-gap);
+  align-items: end;
+}
+
+#shiftNow {
+  height: var(--control-height);
+}
+
+footer {
+  margin: 0;
+  padding: 8px 0 28px;
+  line-height: 1.9;
+}
+
+footer a {
+  display: inline-block;
+  padding: 4px 0;
+}
+
+footer a:hover {
+  color: var(--cyan);
+}
+
+@media (min-width: 761px) {
+  .hero {
+    height: clamp(540px, calc(100svh - 124px), 740px);
+  }
+}
+
+@media (min-width: 761px) and (max-width: 1050px) {
+  header {
+    gap: 20px;
+  }
+  header .brand {
+    font-size: 20px;
+  }
+  header .badge {
+    display: none;
+  }
+  header nav {
+    margin-left: auto;
+    gap: 16px;
+    font-size: 13px;
+  }
+  .hero {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .result-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .region-summary {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 760px) {
+  :root {
+    --page-gutter: 16px;
+    --section-gap: 20px;
+    --panel-padding: 16px;
+    --content-gap: 12px;
+    --anchor-offset: 84px;
+  }
+  header {
+    padding-inline: var(--page-gutter);
+    gap: 12px;
+  }
+  .brand-logo {
+    width: 32px;
+    height: 32px;
+  }
+  header nav {
+    gap: 8px;
+    font-size: 14px;
+  }
+  .hero {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--section-gap);
+  }
+  h2,
+  .workspace h2 {
+    font-size: 20px;
+  }
+  .workspace > .section-heading {
+    gap: 16px;
+    margin-bottom: 16px;
+    align-items: flex-start;
+  }
+  .workspace > h2 {
+    margin-bottom: 20px;
+  }
+  .workspace > p.muted {
+    margin-bottom: 20px;
+    font-size: 13px;
+  }
+  .cities-panel {
+    padding: 16px;
+  }
+  .form-row {
+    margin-bottom: 16px;
+    gap: 16px;
+  }
+  .shift-base-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+  #shiftNow {
+    width: 100%;
+  }
+  .zone-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .zone-card {
+    padding: 14px 12px;
+  }
+  .result-grid {
+    grid-template-columns: minmax(0, 1fr);
+    margin-top: 16px;
+  }
+  .result-card {
+    padding: 16px;
+  }
+  .region-selector {
+    flex: none;
+    width: 100%;
+  }
+  .region-summary {
+    padding: 16px;
+    gap: 20px;
+  }
+  .region-facts {
+    gap: 16px;
+  }
+  .region-guide {
+    font-size: 13px;
+  }
+  .region-clock {
+    font-size: clamp(32px, 10vw, 44px);
+  }
+  footer {
+    font-size: 11px;
+    padding-bottom: 24px;
+  }
+}
