@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>世界时钟 · 此刻，连接世界</title>
+    <link rel="stylesheet" href="src/css/style.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="#home">
+        <span>◎</span>
+        世界时钟
+      </a>
+      <nav id="mainNavigation" aria-label="主导航">
+        <a href="#home" class="active">地球总览</a>
+        <a href="#regionDetails">地区详情</a>
+        <a href="#zones">时区查询</a>
+        <a href="#convert">时间转换</a>
+        <a href="#shift">时间推算</a>
+        <a href="#reverse">时间反查</a>
+      </nav>
+      <button
+        type="button"
+        class="mobile-nav-toggle"
+        aria-controls="mainNavigation"
+        aria-expanded="false"
+      >
+        <span class="mobile-nav-title">地球总览</span>
+        <span class="mobile-nav-icon" aria-hidden="true"></span>
+      </button>
+      <span class="badge">● 离线可用</span>
+    </header>
+    <!-- 页面骨架：业务脚本依赖各区块的 id；普通脚本按数据、算法、组件、业务入口顺序加载，以兼容 file://。 -->
+    <main>
+      <section id="home">
+        <div class="hero">
+          <div class="globe-panel panel">
+            <div class="panel-title">
+              <h2>世界地球</h2>
+              <span class="live">● 实时</span>
+            </div>
+            <canvas id="globe" aria-label="可拖动和缩放的世界地球"></canvas>
+            <div id="globeFallback" hidden>
+              当前浏览器不支持 Canvas。请使用下方城市搜索和时间工具。
+            </div>
+            <div id="cityTooltip" class="tooltip" hidden></div>
+            <div class="globe-bottom">
+              <span>拖动旋转 · 点击领土查看首都时间</span>
+              <div>
+                <button
+                  id="rotate"
+                  class="rotation-status"
+                  type="button"
+                  aria-pressed="false"
+                  aria-label="停止自转"
+                >
+                  Ⅱ 停止自转
+                </button>
+                <button id="reset">↻ 复位</button>
+              </div>
+            </div>
+          </div>
+          <div class="cities-panel panel">
+            <div class="search" role="search">
+              <span aria-hidden="true">⌕</span>
+              <input id="search" placeholder="搜索国家或城市…" aria-label="搜索国家或城市" />
+              <button
+                id="clearSearch"
+                class="search-clear"
+                type="button"
+                aria-label="清空搜索"
+                hidden
+              >
+                ×
+              </button>
+            </div>
+            <div class="section-heading">
+              <h2 id="citiesTitle">全部城市</h2>
+              <button id="showAll">仅看收藏</button>
+            </div>
+            <p id="searchCount" class="muted small"></p>
+            <div id="cityCards" class="city-grid"></div>
+          </div>
+        </div>
+      </section>
+      <section id="regionDetails" class="workspace panel" aria-labelledby="regionTitle">
+        <p class="eyebrow">LOCAL TIME GUIDE</p>
+        <div class="section-heading">
+          <h2 id="regionTitle">地区时间详情</h2>
+          <label class="region-selector">
+            选择城市
+            <select id="regionCity"></select>
+          </label>
+        </div>
+        <div id="regionContent"></div>
+      </section>
+      <section id="zones" class="workspace panel">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">TIME ZONES</p>
+            <h2>全球时区总览</h2>
+          </div>
+          <label class="small">
+            <input type="checkbox" id="fractional" checked />
+            包含非整点偏移
+          </label>
+        </div>
+        <p class="muted">
+          固定 UTC 偏移不随夏令时变化。代表城市按此刻实际偏移匹配；UTC+12 与 UTC−12
+          时刻相同，日期相差一天。
+        </p>
+        <div id="zoneGrid" class="zone-grid"></div>
+      </section>
+      <section id="convert" class="workspace panel">
+        <p class="eyebrow">TIME CONVERTER</p>
+        <h2>一个时间，多个目的地</h2>
+        <div class="form-row">
+          <label>
+            来源城市 / 固定偏移
+            <select id="source"></select>
+          </label>
+          <label>
+            当地日期与时间
+            <input id="sourceTime" type="datetime-local" step="60" />
+          </label>
+          <button id="convertNow" class="primary">换算时间 →</button>
+        </div>
+        <div id="ambiguity"></div>
+        <p id="convertMessage" role="status"></p>
+        <label>
+          添加目的城市
+          <select id="destination"></select>
+        </label>
+        <div id="conversionResults" class="result-grid"></div>
+      </section>
+      <section id="shift" class="workspace panel">
+        <p class="eyebrow">TIME CALCULATOR</p>
+        <h2>时间推算</h2>
+        <p class="muted">
+          从指定时间往前或往后推算。天、小时、分、秒可任选填写，留空按 0 计算；例如 100 小时、150
+          分钟。按实际经过时长计算，1 天 = 24 小时，跨夏令时后当地钟点可能变化。
+        </p>
+        <form id="shiftForm">
+          <div class="form-row">
+            <label>
+              城市 / 固定偏移
+              <select id="shiftZone"></select>
+            </label>
+            <label>
+              基准日期与时间
+              <input
+                id="shiftBase"
+                type="datetime-local"
+                step="1"
+                min="1900-01-01T00:00:00"
+                max="2100-12-31T23:59:59"
+                required
+              />
+            </label>
+            <button id="shiftNow" type="button">使用此刻</button>
+          </div>
+          <div class="shift-amount-toolbar">
+            <span>推算时长</span>
+            <button id="shiftClear" type="button">清空天、时、分、秒</button>
+          </div>
+          <div class="shift-amounts">
+            <label>
+              天
+              <input
+                id="shiftDays"
+                type="number"
+                min="0"
+                step="1"
+                placeholder="0"
+                inputmode="numeric"
+              />
+            </label>
+            <label>
+              时
+              <input
+                id="shiftHours"
+                type="number"
+                min="0"
+                step="1"
+                placeholder="0"
+                inputmode="numeric"
+              />
+            </label>
+            <label>
+              分
+              <input
+                id="shiftMinutes"
+                type="number"
+                min="0"
+                step="1"
+                placeholder="0"
+                inputmode="numeric"
+              />
+            </label>
+            <label>
+              秒
+              <input
+                id="shiftSeconds"
+                type="number"
+                min="0"
+                step="1"
+                placeholder="0"
+                inputmode="numeric"
+              />
+            </label>
+          </div>
+          <div class="form-row">
+            <label>
+              推算方向
+              <select id="shiftDirection">
+                <option value="1">往后推（未来 / 加上时长）</option>
+                <option value="-1">往前推（过去 / 减去时长）</option>
+              </select>
+            </label>
+            <button type="submit" class="primary">计算时间 →</button>
+          </div>
+        </form>
+        <div id="shiftAmbiguity"></div>
+        <div id="shiftResult" role="status" aria-live="polite"></div>
+      </section>
+      <section id="reverse" class="workspace panel">
+        <p class="eyebrow">FIND THE MOMENT</p>
+        <h2>此刻，哪里是这个时间？</h2>
+        <p class="muted">根据设备当前时间，查询内置城市及 UTC−12 至 UTC+14 范围内的时区。</p>
+        <div class="form-row">
+          <label>
+            目标当地时间
+            <input type="time" id="targetTime" value="09:00" required />
+          </label>
+          <label>
+            匹配范围
+            <select id="tolerance">
+              <option value="0">精确到分钟</option>
+              <option value="5" selected>前后5分钟</option>
+              <option value="15">前后15分钟</option>
+              <option value="30">前后30分钟</option>
+            </select>
+          </label>
+          <button id="reverseNow" class="primary">查找城市 →</button>
+        </div>
+        <p id="reverseSummary" role="status"></p>
+        <div id="reverseResults" class="result-grid"></div>
+      </section>
+      <footer>
+        时间随设备时钟更新 · 城市时区由浏览器自动处理夏令时
+        <br />
+        <span>地图：Natural Earth（公共领域） · 完整离线，无需服务器</span>
+      </footer>
+    </main>
+    <script src="src/data/cities.js"></script>
+    <script src="src/data/countries.js"></script>
+    <script src="src/data/land.js"></script>
+    <script src="src/js/time.js"></script>
+    <script src="src/vendor/d3-array.min.js"></script>
+    <script src="src/vendor/d3-geo.min.js"></script>
+    <script src="src/js/app-core.js"></script>
+    <script src="src/js/globe-shaders.js"></script>
+    <script src="src/js/globe.js"></script>
+    <script src="src/js/city-picker.js"></script>
+    <script src="src/js/cities-panel.js"></script>
+    <script src="src/js/zone-overview.js"></script>
+    <script src="src/js/time-converter.js"></script>
+    <script src="src/js/time-reverse.js"></script>
+    <script src="src/js/app.js"></script>
+    <script src="src/js/region-details.js"></script>
+    <script src="src/js/time-shift.js"></script>
+    <script src="src/js/navigation.js"></script>
+  </body>
+</html>
