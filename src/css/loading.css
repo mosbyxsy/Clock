@@ -1,4 +1,9 @@
 /* 基础数据就绪前使用全局状态；地球后续加载独立显示，不阻断其他工具。 */
+@media (scripting: none) {
+  .startup-loading {
+    display: none;
+  }
+}
 .startup-loading {
   position: fixed;
   inset: 0;
@@ -15,6 +20,35 @@
 }
 .startup-loading.is-leaving {
   opacity: 0;
+}
+
+.workspace {
+  position: relative;
+}
+.tool-loading {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px;
+  border-radius: inherit;
+  background: #0b1726f2;
+  font-size: 13px;
+  color: var(--muted);
+}
+nav a[data-loading='true']::after {
+  content: '…';
+  margin-left: 4px;
+  color: var(--cyan);
+}
+.globe-loading.has-error {
+  pointer-events: auto;
+}
+.number-stepper-actions[hidden] {
+  display: none;
 }
 .startup-loading[hidden],
 .globe-loading[hidden] {

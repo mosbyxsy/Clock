@@ -3,7 +3,7 @@ window.ClockFeatures.createNumberSteppers = function () {
   'use strict';
   for (const wrapper of document.querySelectorAll('.number-stepper')) {
     const input = wrapper.querySelector('input[type="number"]');
-    const label = input.closest('label')?.firstChild.textContent.trim() || '数值';
+    const label = input.labels?.[0]?.textContent.trim() || '数值';
     for (const button of wrapper.querySelectorAll('[data-number-step]')) {
       const increase = Number(button.dataset.numberStep) > 0;
       button.setAttribute('aria-label', `${increase ? '增加' : '减少'}${label}`);

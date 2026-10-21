@@ -11,7 +11,13 @@ window.ClockFeatures.createGlobe = async function () {
   const tip = document.getElementById('cityTooltip');
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
   const DEGREES_TO_RADIANS = Math.PI / 180;
-  const countries = window.COUNTRIES || [];
+  const geometryById = new Map(
+    (window.COUNTRY_GEOMETRIES || []).map((item) => [item.id, item.geometry])
+  );
+  const countries = window.COUNTRIES.map((country) => ({
+    ...country,
+    geometry: geometryById.get(country.id),
+  })).filter((country) => country.geometry);
   const countryById = new Map(
     countries.map((country, index) => {
       country.key = index + 1;

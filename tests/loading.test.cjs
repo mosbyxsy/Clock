@@ -36,6 +36,9 @@ const root = path.resolve(__dirname, '..');
     await page.addInitScript(() => {
       document.addEventListener('DOMContentLoaded', () => {
         new MutationObserver(() => {
+          if (document.documentElement.dataset.appState === 'ready' && !window.readyAt) {
+            window.readyAt = performance.now();
+          }
           if (
             ['prepared', 'ready'].includes(document.documentElement.dataset.appState) &&
             !window.readySnapshot
@@ -52,8 +55,16 @@ const root = path.resolve(__dirname, '..');
     const dataGate = new Promise((resolve) => {
       releaseData = resolve;
     });
-    await page.route('**/src/data/countries.js', async (route) => {
+    await page.route('**/src/data/country-info.js', async (route) => {
       await dataGate;
+      await route.continue();
+    });
+    let releaseMap;
+    const mapGate = new Promise((resolve) => {
+      releaseMap = resolve;
+    });
+    await page.route('**/src/data/countries-geometry.js', async (route) => {
+      await mapGate;
       await route.continue();
     });
     const navigation = page.goto(url);
@@ -62,10 +73,26 @@ const root = path.resolve(__dirname, '..');
     releaseData();
     await navigation;
     await page.waitForFunction(() => document.documentElement.dataset.appState === 'ready');
-    assert.equal(await page.locator('#startupLoading').isVisible(), false);
+    await page.locator('#startupLoading').waitFor({ state: 'hidden' });
+    const timing = await page.evaluate(() => ({
+      readyAt: window.readyAt,
+      firstPaint: performance
+        .getEntriesByType('paint')
+        .find((entry) => entry.name === 'first-paint')?.startTime,
+    }));
+    if (timing.firstPaint !== undefined) assert.ok(timing.readyAt - timing.firstPaint >= 430);
     const snapshot = await page.evaluate(() => window.readySnapshot);
     assert.equal(snapshot.globePending, true);
     assert.ok(snapshot.cards > 0 && snapshot.cards < 305);
+    assert.equal(await page.locator('#shift').getAttribute('data-tool-state'), 'idle');
+    await page.locator('nav a[href="#shift"]').click();
+    await page.waitForFunction(
+      () => document.getElementById('shift').dataset.toolState === 'ready'
+    );
+    assert.equal(await page.locator('#convert').getAttribute('data-tool-state'), 'ready');
+    assert.equal(await page.locator('#shift').getAttribute('data-tool-state'), 'ready');
+    assert.equal(await page.evaluate(() => Boolean(window.COUNTRY_GEOMETRIES)), false);
+    releaseMap();
 
     // 快速更改查询后，旧批次不能把其他城市重新插入当前结果。
     await page.locator('#search').fill('中国');
@@ -87,7 +114,7 @@ const root = path.resolve(__dirname, '..');
     assert.equal(await page.locator('.city-card').count(), 305);
 
     const missingData = await browser.newPage();
-    await missingData.route('**/src/data/countries.js', (route) => route.abort());
+    await missingData.route('**/src/data/country-info.js', (route) => route.abort());
     await missingData.goto(url);
     await missingData.locator('#startupRetry').waitFor({ state: 'visible' });
     assert.equal(await missingData.locator('main').evaluate((node) => node.inert), true);
@@ -103,6 +130,18 @@ const root = path.resolve(__dirname, '..');
     assert.equal(await missingGlobe.locator('main').evaluate((node) => node.inert), false);
     await missingGlobe.locator('#search').fill('北京');
     assert.equal(await missingGlobe.locator('.city-card').count(), 1);
+    await missingGlobe.unroute('**/src/vendor/d3-geo.min.js');
+    await missingGlobe.locator('#globeLoading button').click();
+    await missingGlobe.waitForFunction(
+      () => document.documentElement.dataset.globeState === 'ready'
+    );
+    const missingTool = await browser.newPage();
+    await missingTool.route('**/src/js/time-shift.js', (route) => route.abort());
+    await missingTool.goto(url);
+    await missingTool.waitForFunction(() => document.documentElement.dataset.appState === 'ready');
+    await missingTool.evaluate(() => ClockTools.ensure('shift').catch(() => {}));
+    assert.equal(await missingTool.locator('#shift').getAttribute('data-tool-state'), 'failed');
+    assert.equal(await missingTool.locator('#convert').getAttribute('data-tool-state'), 'ready');
     console.log('通过：数据等待、首屏分批、页面先于地球就绪、快速搜索、城市定位及资源失败提示。');
   } finally {
     await browser?.close();

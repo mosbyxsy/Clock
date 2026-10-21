@@ -14,7 +14,6 @@
     <div
       id="startupLoading"
       class="startup-loading"
-      hidden
       role="status"
       aria-live="polite"
       aria-busy="true"
@@ -25,13 +24,12 @@
       <p id="startupMessage">正在加载城市与时区数据…</p>
       <button id="startupRetry" type="button" hidden>重新加载</button>
     </div>
+    <script>
+      // 启动页节点出现后预约首次绘制计时，不等待所有延迟脚本下载完成。
+      ClockLoading.markVisible();
+    </script>
     <noscript>
       <p>本网站需要启用 JavaScript 才能显示城市时间和运行时间工具。</p>
-      <style>
-        .startup-loading {
-          display: none;
-        }
-      </style>
     </noscript>
     <header inert>
       <a class="brand" href="#home">
@@ -203,8 +201,8 @@
               </button>
             </div>
             <div class="shift-amounts">
-              <label>
-                天
+              <div class="number-field">
+                <label for="shiftDays">天</label>
                 <div class="number-stepper">
                   <input
                     id="shiftDays"
@@ -233,9 +231,9 @@
                     </button>
                   </div>
                 </div>
-              </label>
-              <label>
-                时
+              </div>
+              <div class="number-field">
+                <label for="shiftHours">时</label>
                 <div class="number-stepper">
                   <input
                     id="shiftHours"
@@ -264,9 +262,9 @@
                     </button>
                   </div>
                 </div>
-              </label>
-              <label>
-                分
+              </div>
+              <div class="number-field">
+                <label for="shiftMinutes">分</label>
                 <div class="number-stepper">
                   <input
                     id="shiftMinutes"
@@ -295,9 +293,9 @@
                     </button>
                   </div>
                 </div>
-              </label>
-              <label>
-                秒
+              </div>
+              <div class="number-field">
+                <label for="shiftSeconds">秒</label>
                 <div class="number-stepper">
                   <input
                     id="shiftSeconds"
@@ -326,7 +324,7 @@
                     </button>
                   </div>
                 </div>
-              </label>
+              </div>
             </div>
             <p class="shift-duration-hint">
               各项可独立输入大数值，例如 100 时或 150 分，无需手动换算。
@@ -377,11 +375,8 @@
       </footer>
     </main>
     <script defer src="src/data/cities.js"></script>
-    <script defer src="src/data/countries.js"></script>
-    <script defer src="src/data/land.js"></script>
+    <script defer src="src/data/country-info.js"></script>
     <script defer src="src/js/time.js"></script>
-    <script defer src="src/vendor/d3-array.min.js"></script>
-    <script defer src="src/vendor/d3-geo.min.js"></script>
     <script defer src="src/js/app-core.js"></script>
     <script defer src="src/js/globe-shaders.js"></script>
     <script defer src="src/js/globe.js"></script>
@@ -394,6 +389,7 @@
     <script defer src="src/js/time-shift.js"></script>
     <script defer src="src/js/number-stepper.js"></script>
     <script defer src="src/js/navigation.js"></script>
+    <script defer src="src/js/tool-loader.js"></script>
     <script defer src="src/js/app.js"></script>
   </body>
 </html>

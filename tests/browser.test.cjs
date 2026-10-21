@@ -23,6 +23,11 @@ const path = require('node:path');
     await page.waitForFunction(
       () => document.getElementById('cityCards').getAttribute('aria-busy') === 'false'
     );
+    await page.evaluate(() =>
+      Promise.all(
+        ['regionDetails', 'zones', 'convert', 'shift', 'reverse'].map((id) => ClockTools.ensure(id))
+      )
+    );
     assert.equal(await page.locator('.city-card').count(), 305);
     assert.equal(await page.locator('.zone-card').count(), 39);
     // 六种常见宽度下，卡片内容不能越过自身边界，也不能撑出页面横向滚动。

@@ -164,7 +164,7 @@ window.ClockFeatures.createCitiesPanel = function () {
         date.textContent = '请升级浏览器的时区数据';
         continue;
       }
-      const view = ClockTime.view(instant, city.zone);
+      const view = ClockUI.liveView(instant, city.zone);
       time.textContent = view.time;
       const dateText = `${view.date} ${view.weekday}`;
       const offsetText = ClockTime.label(view.offset);

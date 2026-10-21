@@ -1,6 +1,6 @@
 /**
  * 开发期数据生成工具，从项目根目录运行；不参与浏览器页面加载。
- * 读取 Natural Earth 原始资料和基础城市库，生成 src/data/countries.js。
+ * 读取 Natural Earth 原始资料和基础城市库，生成基础资料与独立地图边界。
  * 首都、中文名与 IANA 映射需要显式维护，不能从最大城市或最近城市无条件推断。
  */
 // Build local country geometry and metadata from Natural Earth source files.
@@ -8,11 +8,7 @@ const fs = require('node:fs'),
   vm = require('node:vm');
 const sandbox = { window: {} };
 vm.createContext(sandbox);
-for (const file of [
-  'src/vendor/d3-array.min.js',
-  'src/vendor/d3-geo.min.js',
-  'src/data/cities.js',
-])
+for (const file of ['src/vendor/d3-array.min.js', 'src/vendor/d3-geo.min.js', 'src/data/cities.js'])
   vm.runInContext(fs.readFileSync(file, 'utf8'), sandbox);
 const cities = sandbox.window.CITIES;
 const source = JSON.parse(fs.readFileSync('scripts/data/countries-source.geojson', 'utf8'));
@@ -213,16 +209,24 @@ for (const city of cities) {
     namesToCountry.get(city.countryEn);
   if (match) cityRegions.push([city.id, match.id, match.name]);
 }
+// 轻量首都/城市资料供全部工具使用，几何边界仅由地球按需读取。
 fs.writeFileSync(
-  'src/data/countries.js',
-  '/* Natural Earth 1:50m countries; see README.md for sources. */\nwindow.CITIES.push(...' +
+  'src/data/country-info.js',
+  '/* Generated country metadata; Natural Earth sources: README.md. */\nwindow.CITIES.push(...' +
     JSON.stringify(added) +
     ');\nwindow.COUNTRIES=' +
-    JSON.stringify(features) +
+    JSON.stringify(features.map(({ geometry, ...country }) => country)) +
     ';\n' +
     JSON.stringify(cityRegions) +
     '.forEach(([id,territory,region])=>Object.assign(window.CITIES[id],{territory,region}));\n'
 );
+fs.writeFileSync(
+  'src/data/countries-geometry.js',
+  '/* Generated Natural Earth boundaries; loaded only for the globe. */\nwindow.COUNTRY_GEOMETRIES=' +
+    JSON.stringify(features.map(({ id, geometry }) => ({ id, geometry }))) +
+    ';\n'
+);
+
 console.log(
   `Built ${features.length} territories, ${features.filter((f) => f.capital !== null).length} capitals/centers, ${cities.length} cities.`
 );

@@ -12,7 +12,7 @@ function createHarness(reducedMotion = false) {
   const classes = new Set();
   const elements = {
     startupLoading: {
-      hidden: true,
+      hidden: false,
       classList: { add: (name) => classes.add(name), remove: (name) => classes.delete(name) },
       setAttribute() {},
     },
@@ -46,7 +46,9 @@ function createHarness(reducedMotion = false) {
     },
     matchMedia: () => ({ matches: reducedMotion }),
   };
+  context.requestAnimationFrame = (callback) => context.setTimeout(callback, 16);
   vm.runInNewContext(source, context);
+  window.ClockLoading.markVisible();
   function advance(milliseconds) {
     const target = now + milliseconds;
     while (true) {
@@ -65,40 +67,53 @@ function createHarness(reducedMotion = false) {
     loader: window.ClockLoading,
     overlay: elements.startupLoading,
     retry: elements.startupRetry,
+    message: elements.startupMessage,
     classes,
     main,
   };
 }
 
 const fast = createHarness();
+assert.equal(fast.overlay.hidden, false);
 fast.advance(100);
 fast.loader.finish();
-fast.advance(1000);
+assert.equal(fast.main.inert, true);
+fast.advance(215);
+assert.equal(fast.classes.has('is-leaving'), false);
+fast.advance(1);
+assert.equal(fast.classes.has('is-leaving'), true);
+assert.equal(fast.main.inert, true);
+fast.advance(149);
+assert.equal(fast.overlay.hidden, false);
+fast.advance(1);
 assert.equal(fast.overlay.hidden, true);
 assert.equal(fast.main.inert, false);
-assert.equal(fast.classes.has('is-leaving'), false);
 
 const slow = createHarness();
-slow.advance(199);
-assert.equal(slow.overlay.hidden, true);
-slow.advance(1);
+slow.advance(1000);
 assert.equal(slow.overlay.hidden, false);
-slow.advance(100);
 slow.loader.finish();
-slow.advance(199);
-assert.equal(slow.classes.has('is-leaving'), false);
-slow.advance(1);
+slow.advance(0);
 assert.equal(slow.classes.has('is-leaving'), true);
-slow.advance(149);
-assert.equal(slow.overlay.hidden, false);
-slow.advance(1);
+assert.equal(slow.main.inert, true);
+slow.advance(150);
 assert.equal(slow.overlay.hidden, true);
 assert.equal(slow.main.inert, false);
+
+const waiting = createHarness();
+waiting.advance(3000);
+assert.match(waiting.message.textContent, /加载较慢/);
+waiting.advance(12000);
+assert.equal(waiting.retry.hidden, false);
+assert.equal(typeof waiting.retry.onclick, 'function');
+assert.equal(waiting.classes.has('loading-failed'), false);
+waiting.loader.finish();
+waiting.advance(150);
+assert.equal(waiting.overlay.hidden, true);
 
 const failure = createHarness();
 failure.advance(10);
 failure.loader.fail('资源缺失');
-assert.equal(failure.overlay.hidden, false);
 assert.equal(failure.retry.hidden, false);
 failure.loader.finish();
 failure.advance(1000);
@@ -106,10 +121,10 @@ assert.equal(failure.overlay.hidden, false);
 assert.equal(failure.main.inert, true);
 
 const reduced = createHarness(true);
-reduced.advance(250);
+reduced.advance(100);
 reduced.loader.finish();
-reduced.advance(250);
+reduced.advance(216);
 assert.equal(reduced.overlay.hidden, true);
 console.log(
-  '通过：快速无闪现、200ms 延迟、300ms 最短展示、150ms 淡出、错误立即显示和减少动态效果。'
+  '通过：立即显示、首绘后至少300ms、准备并行推进、淡出防误触、慢加载/重试、错误和减少动态效果。'
 );

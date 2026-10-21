@@ -1452,6 +1452,12 @@ input[type='number']::-webkit-outer-spin-button {
   position: relative;
   min-width: 0;
 }
+.number-field {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 8px;
+}
 
 #shift .number-stepper input {
   padding-right: 48px;

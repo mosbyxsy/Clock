@@ -2,6 +2,26 @@
 const assert = require('node:assert/strict');
 require('../src/js/time.js');
 const time = globalThis.ClockTime;
+const fs = require('node:fs');
+const path = require('node:path');
+const vm = require('node:vm');
+const data = { window: {} };
+vm.createContext(data);
+for (const file of ['cities.js', 'country-info.js', 'countries-geometry.js']) {
+  vm.runInContext(fs.readFileSync(path.join(__dirname, '../src/data', file), 'utf8'), data);
+}
+assert.equal(data.window.CITIES.length, 305);
+assert.equal(data.window.COUNTRIES.length, data.window.COUNTRY_GEOMETRIES.length);
+assert.ok(data.window.COUNTRIES.every((country) => !Object.hasOwn(country, 'geometry')));
+assert.ok(
+  data.window.COUNTRIES.every(
+    (country) => country.capital === null || data.window.CITIES[country.capital]
+  )
+);
+assert.equal(
+  data.window.CITIES[data.window.COUNTRIES.find((country) => country.id === 'MNG').capital].name,
+  '乌兰巴托'
+);
 assert.equal(time.offset(new Date('2026-01-01T00:00:00Z'), 'Asia/Shanghai'), 480);
 assert.equal(time.offset(new Date('2026-01-01T00:00:00Z'), 'Asia/Kathmandu'), 345);
 assert.equal(time.resolve('2026-03-08T02:30', 'America/New_York').length, 0);
