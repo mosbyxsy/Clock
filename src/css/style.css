@@ -847,10 +847,6 @@ button:disabled {
   justify-content: center;
 }
 
-.workspace input::-webkit-datetime-edit {
-  padding: 0;
-}
-
 .workspace input::-webkit-calendar-picker-indicator {
   margin: 0;
   padding: 4px;
