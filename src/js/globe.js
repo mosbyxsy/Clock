@@ -411,6 +411,17 @@ window.ClockFeatures.createGlobe = async function () {
   hoverTip.className = 'tooltip globe-hover-tip';
   hoverTip.hidden = true;
   panel.append(hoverTip);
+  // 固定时间卡可打开详情；跟随鼠标的悬停提示仍保持不拦截指针。
+  tip.addEventListener('click', () => {
+    if (tip.dataset.cityId !== undefined)
+      window.showRegionDetails(Number(tip.dataset.cityId), true);
+  });
+  tip.addEventListener('keydown', (event) => {
+    if (tip.dataset.cityId !== undefined && (event.key === 'Enter' || event.key === ' ')) {
+      event.preventDefault();
+      tip.click();
+    }
+  });
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
   /** 将经纬度转换为单位球三维向量，供正射投影和正反面判断使用。 */
   function vector(la, lo) {
@@ -612,6 +623,21 @@ window.ClockFeatures.createGlobe = async function () {
   }
   /** 输出国家/地区、城市、实时时间与 IANA 标识；首都使用星标，名称无背景色。 */
   function writeTip(node, country, city) {
+    if (node === tip) {
+      if (city) {
+        node.dataset.cityId = city.id;
+        node.tabIndex = 0;
+        node.setAttribute('role', 'button');
+        node.setAttribute('aria-label', `查看${city.country} · ${city.name}的地区时间详情`);
+        node.setAttribute('aria-controls', 'regionDetails');
+      } else {
+        delete node.dataset.cityId;
+        node.removeAttribute('tabindex');
+        node.removeAttribute('role');
+        node.removeAttribute('aria-label');
+        node.removeAttribute('aria-controls');
+      }
+    }
     const name = country?.name || (city ? regionName(city) : '');
     if (node.childElementCount !== 3)
       node.replaceChildren(

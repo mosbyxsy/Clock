@@ -196,6 +196,18 @@ p {
   z-index: 2;
 }
 
+#cityTooltip[data-city-id] {
+  pointer-events: auto;
+  cursor: pointer;
+}
+#cityTooltip[data-city-id]:hover {
+  background: #123346f5;
+}
+#cityTooltip[data-city-id]:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 3px;
+}
+
 .cities-panel {
   padding: 20px;
 
@@ -216,6 +228,23 @@ p {
 
 .search input {
   background: transparent;
+}
+
+.search-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 20px;
+  height: 20px;
+}
+
+.search-icon svg {
+  display: block;
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
 }
 
 .section-heading {
